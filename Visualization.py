@@ -115,24 +115,13 @@ def add_new_object(n_clicks, new_object):
     [Input('resource-dropdown', 'value')]
 )
 def update_map_markers(resource):
-    if resource == 'resource1':
-        markers = [
-            dl.Marker(position=[51.5, -0.1], children=dl.Tooltip('Marker 1')),
-            dl.Marker(position=[51.6, -0.2], children=dl.Tooltip('Marker 2'))
-        ]
-    elif resource == 'resource2':
-        markers = [
-            dl.Marker(position=[51.4, -0.3], children=dl.Tooltip('Marker 3')),
-            dl.Marker(position=[51.6, -0.4], children=dl.Tooltip('Marker 4'))
-        ]
-    elif resource == 'resource3':
-        markers = [
-            dl.Marker(position=[51.3, -0.5], children=dl.Tooltip('Marker 5')),
-            dl.Marker(position=[51.5, -0.6], children=dl.Tooltip('Marker 6'))
-        ]
-    else:
-        markers = []
-
+    markers = []
+    objects = map_instance.get_objects()
+    for obj in objects['GeoMapObjects']:
+        x_values = obj['pts'][0]
+        y_values = obj['pts'][1]
+        if obj['type'] == 'AGM_TrafficLight':
+            markers.append(dl.Marker(position=[x_values, y_values], children=dl.Tooltip(obj['type'])))
     return markers
 
 
