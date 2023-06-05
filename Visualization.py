@@ -43,11 +43,11 @@ app.layout = html.Div([
 
     dl.Map(
         id='map',
-        center=[51.505, -0.09],
+        center=[3.0484612680000001e+01, 5.9841484199999996e+01],
         zoom=10,
         children=[
             dl.TileLayer(url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"),
-            dl.LayerGroup(id='marker-group')
+            dl.LayerGroup(id='map-group'),
         ],
         style={'width': '100%', 'height': '500px'}
     )
@@ -111,17 +111,29 @@ def add_new_object(n_clicks, new_object):
 
 
 @app.callback(
-    Output('marker-group', 'children'),
+    Output('map-group', 'children'),
     [Input('resource-dropdown', 'value')]
 )
-def update_map_markers(resource):
+def update_map(resource):
     markers = []
+    colors = {
+        'AGM_Curb': 'gold',
+        'AGM_CurbEdge': 'orange',
+        'AGM_StopShelter': 'red',
+        'AGM_SingleRail': 'green',
+        'AGM_TrafficLight': 'violet',
+        'AGM_Pole': 'blue'
+    }
     objects = map_instance.get_objects()
     for obj in objects['GeoMapObjects']:
-        x_values = obj['pts'][0]
-        y_values = obj['pts'][1]
-        if obj['type'] == 'AGM_TrafficLight':
-            markers.append(dl.Marker(position=[x_values, y_values], children=dl.Tooltip(obj['type'])))
+        if not obj['type'] in ['AGM_RoadNode', 'AGM_Rails', 'AGM_ExternalRailPropertises'] :
+            positions=[]
+            for i in range(0,len(obj['pts']),2) :
+                positions.append([obj['pts'][i], obj['pts'][i+1]])
+            if obj['type'] in ['AGM_StopShelter', 'AGM_TrafficLight', 'AGM_Pole', 'AGM_Curb']:
+                markers.append(dl.Polygon(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])),color=colors[obj['type']]))
+            if obj['type'] in ['AGM_SingleRail', 'AGM_CurbEdge']:
+                markers.append(dl.Polyline(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])),color=colors[obj['type']]))
     return markers
 
 
