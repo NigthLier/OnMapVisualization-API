@@ -7,6 +7,7 @@ from Map import Map
 
 app = dash.Dash(__name__, suppress_callback_exceptions=True)
 map_instance = Map('geomap.yaml')
+Objects = {'GeoMapObjects': []}
 
 app.layout = html.Div([
     html.H1("Interactive Map Board"),
@@ -31,7 +32,20 @@ app.layout = html.Div([
         html.H2("Save Map"),
         dcc.Input(id='filename-input', type='text', placeholder='File name'),
         html.Button('Save Map', id='save-button', n_clicks=0),
-        html.Div(id='add-status')
+        html.Div(id='save-status')
+    ], style={'margin-bottom': '20px'}),
+
+    html.Div([
+        html.H2("Show all"),
+        html.Button('Show all', id='all-map-button', n_clicks=0),
+        html.Div(id='all-map-status')
+    ], style={'margin-bottom': '20px'}),
+
+    html.Div([
+        html.H2("Find by Id"),
+        dcc.Input(id='id-input', type='text', placeholder='ID'),
+        html.Button('Find', id='id-map-button', n_clicks=0),
+        html.Div(id='id-map-status')
     ], style={'margin-bottom': '20px'}),
 
     html.Div([
@@ -125,9 +139,11 @@ def add_new_object(n_clicks, new_object):
 
 @app.callback(
     Output('map-group', 'children'),
-    [Input('resource-dropdown', 'value')]
+    [Input('resource-dropdown', 'value')],
+    [dash.dependencies.Input('all-map-button', 'n_clicks')],
+    [dash.dependencies.Input('id-map-button', 'n_clicks')]
 )
-def update_map(resource):
+def update_map(resource, all, id):
     markers = []
     colors = {
         'AGM_Curb': 'gold',
@@ -137,16 +153,23 @@ def update_map(resource):
         'AGM_TrafficLight': 'violet',
         'AGM_Pole': 'blue'
     }
-    objects = map_instance.get_objects()
-    for obj in objects['GeoMapObjects']:
+    weight = {
+        'AGM_Curb': 3,
+        'AGM_CurbEdge': 2,
+        'AGM_StopShelter': 3,
+        'AGM_SingleRail': 3,
+        'AGM_TrafficLight': 6,
+        'AGM_Pole': 6
+    }
+    for obj in Objects['GeoMapObjects']:
         if not obj['type'] in ['AGM_RoadNode', 'AGM_Rails', 'AGM_ExternalRailPropertises']:
             positions = []
             for i in range(0, len(obj['pts']), 2):
                 positions.append([obj['pts'][i+1], obj['pts'][i]])
-            if obj['type'] in ['AGM_StopShelter', 'AGM_TrafficLight', 'AGM_Pole', 'AGM_Curb']:
-                markers.append(dl.Polygon(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']]))
-            if obj['type'] in ['AGM_SingleRail', 'AGM_CurbEdge']:
-                markers.append(dl.Polyline(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']]))
+            if obj['type'] in ['AGM_StopShelter', 'AGM_TrafficLight', 'AGM_Pole']:
+                markers.append(dl.Polygon(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']], weight=weight[obj['type']]))
+            if obj['type'] in ['AGM_SingleRail', 'AGM_CurbEdge', 'AGM_Curb']:
+                markers.append(dl.Polyline(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']], weight=weight[obj['type']]))
     return markers
 
 
@@ -163,6 +186,24 @@ def save_map(n_clicks, filename):
 
     return 0
 
+@app.callback(
+    dash.dependencies.Output('all-map-button', 'n_clicks'),
+    [dash.dependencies.Input('all-map-button', 'n_clicks')],
+)
+def all_map(n_clicks):
+    if n_clicks > 0:
+        Objects['GeoMapObjects'] = map_instance.get_objects()
+    return 0
+
+@app.callback(
+    dash.dependencies.Output('id-map-button', 'n_clicks'),
+    [dash.dependencies.Input('id-map-button', 'n_clicks')],
+    [dash.dependencies.State('id-input', 'value')]
+)
+def find_id_map(n_clicks, id):
+    if n_clicks > 0 and id:
+        Objects['GeoMapObjects'] = [map_instance.get_object_by_id(int(id))]
+    return 0
 
 if __name__ == '__main__':
     app.run_server(debug=True)

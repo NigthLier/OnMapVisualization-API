@@ -24,16 +24,15 @@ class Map:
         types = set()
         for obj in self.data['GeoMapObjects']:
             types.add(obj['type'])
-        print(*types)
 
     def get_objects(self):
-        return self.data
+        return self.data['GeoMapObjects']
 
     def get_objects_by_type(self, obj_type):
-        return [obj for obj in self.data if obj['type'] == obj_type]
+        return [obj for obj in self.data['GeoMapObjects'] if obj['type'] == obj_type]
 
     def get_object_by_id(self, obj_id):
-        for obj in self.data:
+        for obj in self.data['GeoMapObjects']:
             if obj['idx'] == obj_id:
                 return obj
         return None
@@ -41,7 +40,7 @@ class Map:
     def get_objects_by_bbox(self, bbox):
         min_x, min_y, max_x, max_y = bbox
         objects_within_bbox = []
-        for obj in self.data:
+        for obj in self.data['GeoMapObjects']:
             pts = obj['pts']
             x_coordinates = pts[::2]
             y_coordinates = pts[1::2]
@@ -50,7 +49,7 @@ class Map:
         return objects_within_bbox
 
     def change_object_attributes(self, obj_id, attributes):
-        for obj in self.data:
+        for obj in self.data['GeoMapObjects']:
             if obj['idx'] == obj_id:
                 for attr, value in attributes.items():
                     if attr in obj:
@@ -61,7 +60,7 @@ class Map:
         raise ValueError(f"No object found with ID '{obj_id}'.")
 
     def add_new_object(self, obj_type, attributes):
-        duplicate_objects = [obj for obj in self.data if obj['type'] == obj_type and all(obj[attr] == value for attr, value in attributes.items())]
+        duplicate_objects = [obj for obj in self.data['GeoMapObjects'] if obj['type'] == obj_type and all(obj[attr] == value for attr, value in attributes.items())]
         if duplicate_objects:
             raise ValueError("Object with the same attributes already exists.")
 
@@ -80,7 +79,7 @@ class Map:
             else:
                 raise ValueError(f"Attribute '{attr}' is not valid for object type '{obj_type}'.")
 
-        self.data.append(new_object)
+        self.data['GeoMapObjects'].append(new_object)
 
         return new_object
 
