@@ -44,7 +44,7 @@ class Map:
             pts = obj['pts']
             x_coordinates = pts[::2]
             y_coordinates = pts[1::2]
-            if all(min_x <= x <= max_x for x in x_coordinates) and all(min_y <= y <= max_y for y in y_coordinates):
+            if all(type(x) != str for x in x_coordinates) and all(type(y) != str for y in y_coordinates) and all(min_x <= x <= max_x for x in x_coordinates) and all(min_y <= y <= max_y for y in y_coordinates):
                 objects_within_bbox.append(obj)
         return objects_within_bbox
 

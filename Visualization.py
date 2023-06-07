@@ -49,6 +49,23 @@ app.layout = html.Div([
     ], style={'margin-bottom': '20px'}),
 
     html.Div([
+        html.H2("Find by type"),
+        dcc.Input(id='type-input', type='text', placeholder='type'),
+        html.Button('Find', id='type-map-button', n_clicks=0),
+        html.Div(id='type-map-status')
+    ], style={'margin-bottom': '20px'}),
+
+    html.Div([
+        html.H2("Find in box"),
+        dcc.Input(id='bbox-x1-input', type='text', placeholder='x1'),
+        dcc.Input(id='bbox-y1-input', type='text', placeholder='y1'),
+        dcc.Input(id='bbox-x2-input', type='text', placeholder='x2'),
+        dcc.Input(id='bbox-y2-input', type='text', placeholder='y2'),
+        html.Button('Find', id='bbox-map-button', n_clicks=0),
+        html.Div(id='bbox-map-status')
+    ], style={'margin-bottom': '20px'}),
+
+    html.Div([
         html.H2("Select Resource"),
         dcc.Dropdown(
             id='resource-dropdown',
@@ -65,8 +82,8 @@ app.layout = html.Div([
 ])
 
 @app.callback(
-    dash.dependencies.Output('map-container', 'children'),
-    [dash.dependencies.Input('resource-dropdown', 'value')]
+    Output('map-container', 'children'),
+    [Input('resource-dropdown', 'value')]
 )
 def update_resource(resource):
     if resource == 'resource1':
@@ -140,10 +157,14 @@ def add_new_object(n_clicks, new_object):
 @app.callback(
     Output('map-group', 'children'),
     [Input('resource-dropdown', 'value')],
-    [dash.dependencies.Input('all-map-button', 'n_clicks')],
-    [dash.dependencies.Input('id-map-button', 'n_clicks')]
+    [Input('all-map-button', 'n_clicks')],
+    [Input('id-map-button', 'n_clicks')],
+    [Input('type-map-button', 'n_clicks')],
+    [Input('bbox-map-button', 'n_clicks')],
+    [Input('update-btn', 'n_clicks')],
+    [Input('add-btn', 'n_clicks')]
 )
-def update_map(resource, all, id):
+def update_map(resource, all, id, type, bbox, upd, add):
     markers = []
     colors = {
         'AGM_Curb': 'gold',
@@ -174,9 +195,9 @@ def update_map(resource, all, id):
 
 
 @app.callback(
-    dash.dependencies.Output('save-button', 'n_clicks'),
-    [dash.dependencies.Input('save-button', 'n_clicks')],
-    [dash.dependencies.State('filename-input', 'value')]
+    Output('save-button', 'n_clicks'),
+    [Input('save-button', 'n_clicks')],
+    [State('filename-input', 'value')]
 )
 def save_map(n_clicks, filename):
     if n_clicks > 0 and filename:
@@ -187,8 +208,8 @@ def save_map(n_clicks, filename):
     return 0
 
 @app.callback(
-    dash.dependencies.Output('all-map-button', 'n_clicks'),
-    [dash.dependencies.Input('all-map-button', 'n_clicks')],
+    Output('all-map-button', 'n_clicks'),
+    [Input('all-map-button', 'n_clicks')],
 )
 def all_map(n_clicks):
     if n_clicks > 0:
@@ -196,13 +217,36 @@ def all_map(n_clicks):
     return 0
 
 @app.callback(
-    dash.dependencies.Output('id-map-button', 'n_clicks'),
-    [dash.dependencies.Input('id-map-button', 'n_clicks')],
-    [dash.dependencies.State('id-input', 'value')]
+    Output('id-map-button', 'n_clicks'),
+    [Input('id-map-button', 'n_clicks')],
+    [State('id-input', 'value')]
 )
 def find_id_map(n_clicks, id):
     if n_clicks > 0 and id:
         Objects['GeoMapObjects'] = [map_instance.get_object_by_id(int(id))]
+    return 0
+
+@app.callback(
+    Output('type-map-button', 'n_clicks'),
+    [Input('type-map-button', 'n_clicks')],
+    [State('type-input', 'value')]
+)
+def find_type_map(n_clicks, type):
+    if n_clicks > 0 and type:
+        Objects['GeoMapObjects'] = map_instance.get_objects_by_type(type)
+    return 0
+
+@app.callback(
+    Output('bbox-map-button', 'n_clicks'),
+    [Input('bbox-map-button', 'n_clicks')],
+    [State('bbox-x1-input', 'value')],
+    [State('bbox-y1-input', 'value')],
+    [State('bbox-x2-input', 'value')],
+    [State('bbox-y2-input', 'value')]
+)
+def find_type_map(n_clicks, x1, y1, x2, y2):
+    if n_clicks > 0 and x1 and x2 and y1 and y2:
+        Objects['GeoMapObjects'] = map_instance.get_objects_by_bbox([float(x1),float(y1),float(x2),float(y2)])
     return 0
 
 if __name__ == '__main__':
