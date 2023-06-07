@@ -130,7 +130,7 @@ def update_resource(resource):
 )
 def update_object_attribute(n_clicks, object_id, attribute_name, new_value):
     if n_clicks > 0:
-        success = map_instance.change_object_attributes(object_id, {attribute_name: new_value})
+        success = map_instance.change_object_attributes(object_id, {attribute_name: float(new_value)})
         if success:
             return html.Div('Attribute updated successfully.')
         else:
@@ -144,8 +144,12 @@ def update_object_attribute(n_clicks, object_id, attribute_name, new_value):
     [State('new-object', 'value')]
 )
 def add_new_object(n_clicks, new_object):
-    if n_clicks > 0:
-        success = map_instance.add_new_object(new_object)
+    
+    if n_clicks > 0 and new_object:
+        elem = new_object.split(' ', 1)
+        type = elem[0]
+        attributes = elem[1]
+        success = map_instance.add_new_object(type, [float(i) for i in attributes.split(',')])
         if success:
             return html.Div('New object added successfully.')
         else:

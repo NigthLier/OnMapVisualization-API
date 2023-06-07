@@ -60,27 +60,12 @@ class Map:
         raise ValueError(f"No object found with ID '{obj_id}'.")
 
     def add_new_object(self, obj_type, attributes):
-        duplicate_objects = [obj for obj in self.data['GeoMapObjects'] if obj['type'] == obj_type and all(obj[attr] == value for attr, value in attributes.items())]
-        if duplicate_objects:
-            raise ValueError("Object with the same attributes already exists.")
-
         new_object = {
             'idx': None,
             'type': obj_type,
-            'pts': [],
-            'tags': {},
-            'layer': '',
-            'lastModified': ''
+            'pts': attributes
         }
-
-        for attr, value in attributes.items():
-            if attr in new_object:
-                new_object[attr] = value
-            else:
-                raise ValueError(f"Attribute '{attr}' is not valid for object type '{obj_type}'.")
-
         self.data['GeoMapObjects'].append(new_object)
-
         return new_object
 
     def save_map(self, file_path):
