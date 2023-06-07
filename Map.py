@@ -4,7 +4,9 @@ import yaml
 class Map:
     def __init__(self, file_path):
         self.data = None
+        self.load_map(file_path)
 
+    def load_map(self, file_path):
         with open(file_path, 'r') as file:
             content = file.read()
         output_filename = 'modified.yaml'
@@ -23,17 +25,6 @@ class Map:
         for obj in self.data['GeoMapObjects']:
             types.add(obj['type'])
         print(*types)
-
-        '''for obj_data in data['GeoMapObjects']:
-            obj = {
-                'idx': obj_data['idx'],
-                'type': obj_data['type'],
-                'pts': obj_data['pts'],
-                'tags': obj_data['tags'],
-                'layer': obj_data['layer'],
-                'lastModified': obj_data['lastModified']
-            }
-            self.objects.append(obj)'''
 
     def get_objects(self):
         return self.data
@@ -97,5 +88,3 @@ class Map:
         with open(file_path, 'w') as f:
             yaml.dump(self.data, f)
 
-
-map_instance = Map('geomap.yaml')
