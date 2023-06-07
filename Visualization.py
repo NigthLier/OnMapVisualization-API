@@ -3,6 +3,7 @@ from dash import dcc
 from dash import html
 import dash_leaflet as dl
 from dash.dependencies import Input, Output, State
+import plotly.graph_objs as go
 
 from Map import Map
 
@@ -10,7 +11,7 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True)
 map_instance = Map('geomap.yaml')
 
 app.layout = html.Div([
-    html.H1("Interactive Board with Google Street View"),
+    html.H1("Interactive Map Board"),
 
     html.Div([
         html.H2("Update Object Attribute"),
@@ -43,7 +44,7 @@ app.layout = html.Div([
 
     dl.Map(
         id='map',
-        center=[3.0484612680000001e+01, 5.9841484199999996e+01],
+        center=[5.9841484199999996e+01, 3.0484612680000001e+01],
         zoom=10,
         children=[
             dl.TileLayer(url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"),
@@ -126,14 +127,14 @@ def update_map(resource):
     }
     objects = map_instance.get_objects()
     for obj in objects['GeoMapObjects']:
-        if not obj['type'] in ['AGM_RoadNode', 'AGM_Rails', 'AGM_ExternalRailPropertises'] :
-            positions=[]
-            for i in range(0,len(obj['pts']),2) :
-                positions.append([obj['pts'][i], obj['pts'][i+1]])
+        if not obj['type'] in ['AGM_RoadNode', 'AGM_Rails', 'AGM_ExternalRailPropertises']:
+            positions = []
+            for i in range(0, len(obj['pts']), 2):
+                positions.append([obj['pts'][i+1], obj['pts'][i]])
             if obj['type'] in ['AGM_StopShelter', 'AGM_TrafficLight', 'AGM_Pole', 'AGM_Curb']:
-                markers.append(dl.Polygon(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])),color=colors[obj['type']]))
+                markers.append(dl.Polygon(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']]))
             if obj['type'] in ['AGM_SingleRail', 'AGM_CurbEdge']:
-                markers.append(dl.Polyline(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])),color=colors[obj['type']]))
+                markers.append(dl.Polyline(positions=positions, children=dl.Tooltip(obj['type']+str(obj['idx'])), color=colors[obj['type']]))
     return markers
 
 
