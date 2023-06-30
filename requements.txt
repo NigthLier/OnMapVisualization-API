@@ -1,0 +1,6 @@
+dash==2.5.1
+dash_extensions==0.1.5
+pyyaml
+colorcet
+geobuf
+protobuf==3.20.1
